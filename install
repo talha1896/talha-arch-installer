@@ -1,0 +1,213 @@
+#!/bin/bash
+clear
+
+# color codes
+L=$(tput setaf bold)
+R=$(tput setaf 1)
+G=$(tput setaf 2)
+B=$(tput setaf 33)
+N=$(tput sgr0)
+
+######################## functions #########################
+# function for branding
+function call {
+    echo -ne "${L}${B}
+              -------------------------------------
+              |      Talha Arch Installer         |
+              |                                   |   
+              | visit: github.com/talha1896       |                              
+              -------------------------------------
+              ${N}"
+}
+
+# functions for color codes
+# for red
+function red {
+    echo "${L}${R}$1${N}"
+}
+# for blue
+function blue {
+    echo "${L}${B}$1${N}"
+}
+# for green
+function green {
+    echo "${L}${G}$1${N}"
+}
+##############################################################
+##################### Magic start from here ##################
+call
+
+# check internet
+green "Check for Internet....."
+sleep 1s
+ping -c 1 archlinux.org &>/dev/null
+if [ $? -eq 0 ]; then
+# do nothing
+ else
+ call
+  red "[-] Internet not connected"
+exit 1
+fi
+##############################################################
+call
+# update mirrors
+green "[+] Update Arch linux mirrors"
+reflector --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+blue "[+] Updated"
+##############################################################
+###################### Installation begins from here #########
+# update keyring
+call
+green "[+] updating keyring"
+pacman -Sy --needed --noconfirm archlinux-keyring
+blue "[+] updated"
+clear 
+
+# Drive configuration
+call
+green "--------------  Drive configuration  -----------------"
+red "Gettting disks information"
+read -p "Do you want to config your drives before proceeding to main steps. (y/n):" choice
+case $choice in
+    y)
+     green "okay! opening disk configuration tool.wait ...."
+     sleep 1s
+      cfdisk
+     ;;
+     n)
+     # do noting
+     ;;
+esac
+blue "Your pc has these drives:"
+lsblk
+red "Double check before proceeding with your drive"
+read -p "Write the drive in which you want to install Arch. (eg: /dev/sda1):" drive
+green "creating partition"
+mkfs.ext4 $drive
+mount $drive /mnt
+blue "created"
+
+#for uefi 
+read -p "Is you are installing in uefi system. (y/n):" uefi
+case $uefi in
+    y) 
+    lsblk
+    read -p "Write the boot partition,which has size around 100mb. (eg. /dev/sda4): " answerefi
+    mkfs.fat -F 32 "$answerefi"
+    green "boot partition created"
+    clear
+    ;;
+    n)
+    # do noting
+    ;;
+esac
+
+
+################################# Install base  ##############################
+call
+green "----------- Install base packages -----------------"
+blue "Installing ......"
+
+# install base
+pacstrap /mnt base base-devel curl
+#generating fstab file
+genfstab -U /mnt >> /mnt/etc/fstab &>/dev/null
+blue "Installed"
+
+############################### Post installation #################
+
+
+# now start post script
+sed '1,/^#part2$/d' talha-arch-installer > /mnt/post-talha-arch-installer
+chmod +x /mnt/post-talha-arch-installer
+arch-chroot /mnt ./post-talha-arch-installer
+
+############################### Install everything ################################
+#part2
+call
+green "----------- Entered in newly created system --------------"
+blue "Updating pacman repo"
+pacman -Sy
+
+# install kernal
+echo "Which processer your pc has:" 
+blue "[1] intel"
+green "[2] amd" 
+read -p "Which processer your pc has:" choice
+case $choice in
+    1)
+     pacman -S linux linux-headers intel-ucode
+    ;;
+
+    2)
+    pacman -S linux linux-headers amd-ucode
+    ;;
+esac
+
+########################################################
+####################### Post installation #################
+call
+green "----------- Post Installation ---------------"
+
+# set timezone
+blue "set time zone"
+read -p "write your location (eg: Asia/Karachi):" time
+ln -sf /usr/share/zoneinfo/$time /etc/localtime
+hwclock --systohc
+
+# hiden default things
+echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+locale-gen
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo "KEYMAP=us" > /etc/vconsole.conf
+
+# set hostname
+read -p "Write your pc host name. (eg: Arch):" hostname
+echo $hostname > /etc/hostname
+echo "127.0.0.1       localhost" >> /etc/hosts
+echo "::1             localhost" >> /etc/hosts
+echo "127.0.1.1       $hostname" >> /etc/hosts
+green "Now your pc host name is $hostname"
+
+
+###############################
+call
+green "........ Almost completed........."
+
+# install grub
+blue "Installing grub"
+pacman -Sy --needed --noconfirm grub efibootmgr networkmanager
+systemctl enable NetworkManager &>/dev/null
+
+green "Enter the drive name to install bootloader in it. (eg: /dev/sda):"
+red "Enter drive name only like /dev/sda not like /dev/sda1:"
+read grubdrive
+grub-install --target=i386-pc $grubdrive
+grub-mkconfig -o /boot/grub/grub.cfg
+blue "Grub installed"
+
+
+# add regular user
+green "Enter username to add a user: "
+read username
+useradd -m -g users -G wheel,audio,video -s /bin/bash $username
+blue "Enter password for "$username": "
+passwd $username
+echo "$username ALL=(ALL) ALL" >> /etc/sudoers.d/$username
+green "$username added"
+blue "All things are done succesfully"
+green "Thank you for using this script.You can reboot your pc now"
+red "for rebooting press any key"
+read
+exit
+unmount -a &>/dev/null
+sudo reboot
+
+
+
+
+
+
+
+
+
