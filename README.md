@@ -1,4 +1,5 @@
-
+## Our Message
+Put an end to the unjust killing of innocent Muslims in Palestine,Kashmir by Israel,India and ensure that both are granted their rightful rights.
 # talha-arch-installer
 
 A simple script to install Arch linux easily.
