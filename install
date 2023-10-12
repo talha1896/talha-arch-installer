@@ -39,10 +39,7 @@ call
 
 # check internet
 ping -c 1 archlinux.org &>/dev/null
-if [ $? -eq 0 ]; then
-# do nothing
- else
- call
+if [ $? -eq 1 ]; then
   red "[-] Internet not connected"
 exit 1
 fi
