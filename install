@@ -46,41 +46,68 @@ fi
 ##############################################################
 call
 # update mirrors
-green "[+] Update Arch linux mirrors"
+green "[+] Updating Arch linux mirrors"
+sleep 1s
 reflector --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
 blue "[+] Updated"
+sleep 1.5s
+clear
 ##############################################################
 ###################### Installation begins from here #########
 # update keyring
 call
 green "[+] updating keyring"
 pacman -Sy --needed --noconfirm archlinux-keyring
-blue "[+] updated"
-clear 
+blue "[+] updated" 
+sleep 1s
+clear
 
 # Drive configuration
 call
 green "--------------  Drive configuration  -----------------"
-red "Gettting disks information"
-read -p "Do you want to config your drives before proceeding to main steps. (y/n):" choice
+red "Gettting disks information. Your general disk configuration should be like :~"
+echo "/dev/sda1 filesystem partitions size must be above 8gb"
+echo "/dev/sda2 swap partition must be 1 gb"
+echo "/dev/sda3 boot partition for uefi only. size is 100gb"
+red "if you understand this then press Enter to continue"
+read
+read -p "Do you want to config your drives as above before proceeding to main steps. (y/n):" choice
 case $choice in
     y)
      green "okay! opening disk configuration tool.wait ...."
-     sleep 1s
+     sleep 2s
       cfdisk
      ;;
      n)
      # do noting
      ;;
 esac
+
+clear
+call
 blue "Your pc has these drives:"
 lsblk
-red "Double check before proceeding with your drive"
+red "Double check before proceeding this step will format your drive"
 read -p "Write the drive in which you want to install Arch. (eg: /dev/sda1):" drive
 green "creating partition"
 mkfs.ext4 $drive
 mount $drive /mnt
-blue "created"
+blue "created Arch filesystem drive"
+
+# for swap
+read -p "Did you also want to create swap partition? [y/n]: " answerswap
+case "$answerswap" in
+  y | Y | yes | Yes | YES)
+  green "Enter swap partition (eg: /dev/sda3): "
+  read swappartition
+  mkswap "$swappartition"
+  swapon "$swappartition"
+blue "swap partition created"
+;;
+  *)
+  red "Skipping Swap partition!"
+  ;;
+esac
 
 #for uefi 
 read -p "Is you are installing in uefi system. (y/n):" uefi
@@ -96,22 +123,26 @@ case $uefi in
     # do noting
     ;;
 esac
-
+clear
 
 ################################# Install base  ##############################
 call
 green "----------- Install base packages -----------------"
 blue "Installing ......"
-
+sleep 1s
 # install base
 pacstrap /mnt base base-devel curl
 #generating fstab file
 genfstab -U /mnt >> /mnt/etc/fstab &>/dev/null
 blue "Installed"
+sleep 2s
+clear
 
 ############################### Post installation #################
-
-
+call
+green "Main installation is finished"
+echo "changing script from archiso to newly created system"
+sleep 3s
 # now start post script
 sed '1,/^#part2$/d' talha-arch-installer > /mnt/post-talha-arch-installer
 chmod +x /mnt/post-talha-arch-installer
@@ -131,11 +162,17 @@ green "[2] amd"
 read -p "Which processer your pc has:" choice
 case $choice in
     1)
-     pacman -S linux linux-headers intel-ucode
+     pacman -S linux linux-headers intel-ucode 
+blue "Driver Installed" 
+sleep 2s
+clear
     ;;
 
     2)
-    pacman -S linux linux-headers amd-ucode
+    pacman -S linux linux-headers amd-ucode 
+blue "Driver Installed" 
+sleep 2s
+clear
     ;;
 esac
 
@@ -163,6 +200,8 @@ echo "127.0.0.1       localhost" >> /etc/hosts
 echo "::1             localhost" >> /etc/hosts
 echo "127.0.1.1       $hostname" >> /etc/hosts
 green "Now your pc host name is $hostname"
+sleep 2s
+clear
 
 
 ###############################
@@ -171,7 +210,8 @@ green "........ Almost completed........."
 
 # install grub
 blue "Installing grub"
-pacman -Sy --needed --noconfirm grub efibootmgr networkmanager
+sleep 2s
+pacman -Sy --needed --noconfirm grub networkmanager efibootmgr
 systemctl enable NetworkManager &>/dev/null
 
 green "Enter the drive name to install bootloader in it. (eg: /dev/sda):"
@@ -180,8 +220,10 @@ read grubdrive
 grub-install --target=i386-pc $grubdrive
 grub-mkconfig -o /boot/grub/grub.cfg
 blue "Grub installed"
+sleep 2s
 
-
+clear
+call
 # add regular user
 green "Enter username to add a user: "
 read username
@@ -192,11 +234,9 @@ echo "$username ALL=(ALL) ALL" >> /etc/sudoers.d/$username
 green "$username added"
 blue "All things are done succesfully"
 green "Thank you for using this script.You can reboot your pc now"
-red "for rebooting press any key"
 read
 exit
-unmount -a &>/dev/null
-sudo reboot
+
 
 
 
