@@ -23,9 +23,9 @@ check : https://wiki.archlinux.org/title/Iwd#iwctl
 Install by running 
 
 ```bash
-  git clone https://github.com/talha1896/talha-arch-installer.git
-  cd talha-arch-installer
-  ./talha-arch-installer
+git clone https://github.com/talha1896/talha-arch-installer.git
+cd talha-arch-installer
+./talha-arch-installer
 ```
 
 
