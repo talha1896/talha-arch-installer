@@ -13,6 +13,19 @@ Although now Arch linux has own installer script but i don't know it dost not wo
 - minimal
 - option for intel or amd
 - option for Bios or uefi systems
+
+## Connect to a network for wireless
+To get an interactive prompt do:
+$ iwctl
+First, if you do not know your wireless device name, list all Wi-Fi devices: 
+$ device list
+then
+$ station device scan
+You can then list all available networks: 
+$ station device get-networks
+Finally, to connect to a network: 
+$ station device connect SSID
+
 ## Installation
 
 Install by running 
@@ -22,7 +35,8 @@ Install by running
   cd talha-arch-installer
   ./talha-arch-installer
 ```
-    
+
+
 ## FAQS
 
 #### What is the default kernal and partition layout?
