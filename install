@@ -44,7 +44,6 @@ if [ $? -eq 1 ]; then
 exit 1
 fi
 ##############################################################
-call
 # update mirrors
 green "[+] Updating Arch linux mirrors"
 sleep 1s
