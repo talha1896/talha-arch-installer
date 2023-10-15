@@ -224,8 +224,10 @@ sleep 3s
 
 clear
 call
+red "Enter password for root:"
+passwd
 # add regular user
-read "Enter username to add a user: " username
+read "Enter username to add a regular user: " username
 useradd -m -g users -G wheel,audio,video -s /bin/bash $username
 blue "Enter password for "$username": "
 passwd $username
