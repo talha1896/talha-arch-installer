@@ -66,9 +66,9 @@ clear
 call
 green "--------------  Drive configuration  -----------------"
 red "Gettting disks information. Your general disk configuration should be like :~"
-echo "/dev/sda1 filesystem partitions size must be above 8gb"
+echo "/dev/sda1 filesystem partition size must be above 8gb"
 echo "/dev/sda2 swap partition must be 1 gb"
-echo "/dev/sda3 boot partition for uefi only. size is 100gb"
+echo "/dev/sda3 boot partition for uefi only. size may be 100mb"
 red "if you understand this then press Enter to continue"
 read
 read -p "Do you want to config your drives as above before proceeding to main steps. (y/n):" choice
@@ -162,14 +162,14 @@ green "[2] amd"
 read -p "Which processer your pc has:" choice
 case $choice in
     1)
-     pacman -S linux linux-headers intel-ucode 
+     pacman -S linux linux-headers intel-ucode --noconfirm
 blue "Driver Installed" 
 sleep 2s
 clear
     ;;
 
     2)
-    pacman -S linux linux-headers amd-ucode 
+    pacman -S linux linux-headers amd-ucode --noconfirm
 blue "Driver Installed" 
 sleep 2s
 clear
@@ -220,13 +220,12 @@ read grubdrive
 grub-install --target=i386-pc $grubdrive
 grub-mkconfig -o /boot/grub/grub.cfg
 blue "Grub installed"
-sleep 2s
+sleep 3s
 
 clear
 call
 # add regular user
-green "Enter username to add a user: "
-read username
+read "Enter username to add a user: " username
 useradd -m -g users -G wheel,audio,video -s /bin/bash $username
 blue "Enter password for "$username": "
 passwd $username
