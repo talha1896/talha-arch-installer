@@ -227,7 +227,7 @@ red "Enter password for root:"
 passwd
 # add regular user
 read "Enter username to add a regular user: " username
-useradd -m -g users -G wheel,audio,video -s /bin/bash $username
+useradd -m users -G wheel,audio,video -s /bin/bash $username
 blue "Enter password for "$username": "
 passwd $username
 echo "$username ALL=(ALL) ALL" >> /etc/sudoers.d/$username
