@@ -143,9 +143,9 @@ green "Main installation is finished"
 echo "changing script from archiso to newly created system"
 sleep 3s
 # now start post script
-sed '1,/^#part2$/d' talha-arch-installer > /mnt/post-talha-arch-installer
-chmod +x /mnt/post-talha-arch-installer
-arch-chroot /mnt ./post-talha-arch-installer
+sed '1,/^#part2$/d' install > /mnt/post-install
+chmod +x /mnt/post-install
+arch-chroot /mnt ./post-install
 
 ############################### Install everything ################################
 #part2
